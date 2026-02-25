@@ -624,3 +624,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
     loadPage("home");
 });
+// ==============================
+// LOGOUT FUNCTION
+// ==============================
+
+const logoutBtn = document.getElementById("logoutBtn");
+
+if (logoutBtn) {
+    logoutBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+
+        // Remove user session
+        localStorage.removeItem("nexoraUser");
+
+        // Optional: smooth fade out
+        document.body.style.opacity = "0";
+        document.body.style.transition = "0.3s ease";
+
+        setTimeout(() => {
+            window.location.href = "index.html"; // landing page
+        }, 300);
+    });
+}
