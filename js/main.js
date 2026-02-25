@@ -171,3 +171,45 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 });
+// ==============================
+// TESTIMONIAL AUTO SLIDER
+// ==============================
+
+const slides = document.querySelectorAll(".testimonial-slide");
+const dotsContainer = document.querySelector(".testimonial-dots");
+
+let currentSlide = 0;
+
+// Create dots dynamically
+slides.forEach((_, index) => {
+    const dot = document.createElement("span");
+    dot.addEventListener("click", () => goToSlide(index));
+    dotsContainer.appendChild(dot);
+});
+
+const dots = document.querySelectorAll(".testimonial-dots span");
+
+function showSlide(index) {
+    slides.forEach(slide => slide.classList.remove("active"));
+    dots.forEach(dot => dot.classList.remove("active"));
+
+    slides[index].classList.add("active");
+    dots[index].classList.add("active");
+
+    currentSlide = index;
+}
+
+function nextSlide() {
+    let next = currentSlide + 1;
+    if (next >= slides.length) next = 0;
+    showSlide(next);
+}
+
+function goToSlide(index) {
+    showSlide(index);
+}
+
+showSlide(0);
+
+// Auto slide every 5 seconds
+setInterval(nextSlide, 5000);
