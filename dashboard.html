@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard | Nexora</title>
+
+<link rel="stylesheet" href="css/dashboard.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+
+<body>
+
+<div class="dashboard">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <div class="logo">NEXORA</div>
+
+        <nav>
+            <a href="#" class="nav-link active" data-page="home">
+                <i class="fa fa-home"></i> Dashboard
+            </a>
+
+            <a href="#" class="nav-link" data-page="courses">
+                <i class="fa fa-book"></i> Available Courses
+            </a>
+
+            <a href="#" class="nav-link" data-page="myCourses">
+                <i class="fa fa-graduation-cap"></i> My Courses
+            </a>
+
+            <a href="#" class="nav-link" data-page="profile">
+                <i class="fa fa-user"></i> Profile
+            </a>
+        </nav>
+    </aside>
+
+    <!-- MAIN AREA -->
+    <div class="main">
+
+        <!-- TOPBAR -->
+        <header class="topbar">
+            <div class="hamburger" id="hamburger">
+                <i class="fa fa-bars"></i>
+            </div>
+
+            <div class="welcome">
+                <h2 id="welcomeText"></h2>
+                <span id="studentStatus" class="badge"></span>
+            </div>
+
+            <div class="profile-icon" id="profileIcon"></div>
+        </header>
+
+        <!-- CONTENT -->
+        <div class="content" id="contentArea">
+            <!-- Dynamic content loads here -->
+        </div>
+
+    </div>
+
+</div>
+
+<!-- HELP BUTTON -->
+<a href="mailto:info@nexoratech.com" class="help-btn">
+    <i class="fa fa-envelope"></i>
+</a>
+<script src="https://js.paystack.co/v1/inline.js"></script>
+<script src="js/dashboard.js"></script>
+</body>
+</html>
