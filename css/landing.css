@@ -640,3 +640,24 @@ footer p {
     background: #00c6ff;
     transform: scale(1.2);
 }
+.social-icons{
+    margin-top:15px;
+    display:flex;
+    gap:15px;
+}
+
+.social-icons a{
+    font-size:20px;
+    color:#aaa;
+    transition:0.3s;
+}
+
+.social-icons a:hover{
+    color:#00c6ff;
+    transform:translateY(-3px);
+}
+
+.footer-container div p i{
+    margin-right:8px;
+    color:#00c6ff;
+}
