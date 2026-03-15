@@ -55,6 +55,23 @@ function formatCurrency(amount) {
 // Ensure structure exists
 user.paidCourses = user.paidCourses || [];
 user.progress = user.progress || {};
+user.payments = user.payments || {};
+// Fix old payments before new system update
+user.paidCourses.forEach(courseId => {
+
+    if(!user.payments[courseId]){
+
+        user.payments[courseId] = {
+            package: "basic",
+            total: 300000,
+            paid: 300000,
+            installments: 2
+        }
+
+    }
+
+});
+localStorage.setItem("nexoraUser", JSON.stringify(user));
 
 
 document.getElementById("welcomeText").innerText =
@@ -85,6 +102,41 @@ hamburger.addEventListener("click", () => {
 });
 
 // ==============================
+// PACKAGE DATABASE
+// ==============================
+
+const packagesDB = [
+{
+id:"basic",
+name:"Basic Package",
+price:300000,
+installments:2,
+items:["Certification of Completion"]
+},
+{
+id:"standard",
+name:"Standard Package",
+price:600000,
+installments:4,
+items:["Laptop","Certification of Completion"]
+},
+{
+id:"premium",
+name:"premium Package",
+price:1000000,
+installments:5,
+items:["Laptop","Internet Router","Headphones","Certification of Completion"]
+},
+{
+id:"golden",
+name:"Golden Package",
+price:2000000,
+installments:5,
+items:["Generator","Laptop","Internet Router","Headphones","Certification of Completion"]
+}
+];
+
+// ==============================
 // COURSE DATABASE
 // ==============================
 const coursesDB = [
@@ -92,7 +144,7 @@ const coursesDB = [
     id: "fullstack",
     title: "Full Stack Development",
     duration: "4 Months",
-    price: 1190,
+    price: 300000,
     level: "Advanced",
     description: "Become a complete developer mastering frontend, backend, databases and deployment.",
     skills: ["HTML, CSS, JS", "React", "Node.js", "APIs", "MongoDB", "Deployment"]
@@ -101,7 +153,7 @@ const coursesDB = [
     id: "frontend",
     title: "Frontend Development",
     duration: "4 Months",
-    price: 2990,
+    price: 300000,
     level: "Beginner",
     description: "Master modern UI engineering and responsive web design.",
     skills: ["HTML5", "CSS3", "JavaScript", "React", "Responsive Design"]
@@ -110,7 +162,7 @@ const coursesDB = [
     id: "backend",
     title: "Backend Development",
     duration: "4 Months",
-    price: 3490,
+    price: 300000,
     level: "Intermediate",
     description: "Build scalable APIs and secure server systems.",
     skills: ["Node.js", "Express", "Authentication", "Databases"]
@@ -119,7 +171,7 @@ const coursesDB = [
     id: "cyber",
     title: "Cyber Security",
     duration: "4 Months",
-    price: 3990,
+    price: 300000,
     level: "Advanced",
     description: "Learn ethical hacking and modern network defense.",
     skills: ["Pen Testing", "Network Security", "Threat Detection"]
@@ -128,7 +180,7 @@ const coursesDB = [
     id: "game",
     title: "Game Development",
     duration: "4 Months",
-    price: 4490,
+    price: 300000,
     level: "Intermediate",
     description: "Create immersive 2D & 3D games using modern engines.",
     skills: ["Unity", "C#", "Game Physics", "3D Environments"]
@@ -137,7 +189,7 @@ const coursesDB = [
     id: "marketing",
     title: "Digital Marketing",
     duration: "3 Months",
-    price: 1990,
+    price: 300000,
     level: "Beginner",
     description: "Master online growth and digital advertising.",
     skills: ["SEO", "Ads", "Analytics", "Content Strategy"]
@@ -146,7 +198,7 @@ const coursesDB = [
     id: "uiux",
     title: "UI/UX Design",
     duration: "4 Months",
-    price: 2990,
+    price: 300000,
     level: "Beginner",
     description: "Design intuitive digital experiences.",
     skills: ["Figma", "User Research", "Wireframing", "Prototyping"]
@@ -155,7 +207,7 @@ const coursesDB = [
     id: "3d",
     title: "3D Modeling & Animation",
     duration: "4 Months",
-    price: 4490,
+    price: 300000,
     level: "Intermediate",
     description: "Produce professional 3D visuals and animation.",
     skills: ["Blender", "Maya", "Lighting", "Animation"]
@@ -438,11 +490,19 @@ function renderCourses() {
                     </span>
                 </div>
 
-                <button onclick="openCourseModal('${course.id}')"
-                    class="course-btn">
-                    <i class="fa-solid fa-circle-info"></i>
-                    View Details
-                </button>
+                ${
+                user.paidCourses.includes(course.id)
+                ?
+                `<button class="purchase-btn disabled-btn">
+                <i class="fa-solid fa-circle-check"></i>
+                Enrolled
+                </button>`
+                :
+                `<button onclick="openCourseModal('${course.id}')" class="course-btn">
+                <i class="fa-solid fa-circle-info"></i>
+                View Details
+                </button>`
+                }
             </div>
         `;
     });
@@ -454,42 +514,165 @@ function renderCourses() {
 // ==============================
 // MY COURSES
 // ==============================
-function renderMyCourses() {
+function renderMyCourses(){
 
-    if (user.paidCourses.length === 0) {
-        contentArea.innerHTML = "<p>You have not enrolled in any courses.</p>";
-        return;
-    }
+if (user.paidCourses.length === 0) {
+contentArea.innerHTML = `
+<p>
+<i class="fa-solid fa-circle-info"></i>
+You have not enrolled in any courses yet.
+</p>`;
+return;
+}
 
-    let html = `<h2>My Courses</h2><div class="grid">`;
+let html = `<h2><i class="fa-solid fa-graduation-cap"></i> My Courses</h2>
+<div class="grid">`;
 
-    user.paidCourses.forEach(id => {
+user.paidCourses.forEach(id => {
 
-        const course = coursesDB.find(c => c.id === id);
-        const progress = user.progress[id] || 0;
+const course = coursesDB.find(c => c.id === id);
+const progress = user.progress[id] || 0;
 
-        html += `
-            <div class="course-card">
-                <h3>
-                    <i class="fa-solid fa-book-open"></i>
-                    ${course.title}
-                </h3>
+const payment = user.payments[id];
 
-                <p>
-                    <i class="fa-solid fa-chart-simple"></i>
-                    Progress: ${progress}%
-                </p>
+const paid = payment ? payment.paid : 0;
+const total = payment ? payment.total : 0;
+const installments = payment ? payment.installments : 1;
 
-                <div class="progress-bar">
-                    <div class="progress-fill"
-                        style="width:${progress}%"></div>
-                </div>
-            </div>
-        `;
-    });
+const percent = total ? Math.floor((paid / total) * 100) : 0;
 
-    html += "</div>";
-    contentArea.innerHTML = html;
+const installmentAmount = Math.ceil(total / installments)
+
+const paidInstallments = Math.floor(paid / installmentAmount)
+
+let ledgerRows = ""
+
+for(let i=1;i<=installments;i++){
+
+const status = i <= paidInstallments ? "Paid" : "Pending"
+
+ledgerRows += `
+<tr>
+<td>${i}</td>
+<td>${formatCurrency(installmentAmount)}</td>
+<td class="${status==="Paid" ? "paid-ledger":"pending-ledger"}">
+${status}
+</td>
+</tr>
+`
+
+}
+
+const remaining = total - paid
+
+html += `
+
+<div class="course-card">
+
+<h3>
+<i class="fa-solid fa-book-open"></i>
+${course.title}
+</h3>
+
+<p>
+<i class="fa-solid fa-chart-simple"></i>
+Course Progress: ${progress}%
+</p>
+
+<div class="progress-bar">
+<div class="progress-fill" style="width:${progress}%"></div>
+</div>
+
+<hr style="margin:15px 0;opacity:0.2">
+
+<p>
+<i class="fa-solid fa-money-bill-wave"></i>
+Payment Progress: ${percent}%
+</p>
+
+<div class="progress-bar">
+<div class="progress-fill" style="width:${percent}%"></div>
+</div>
+
+<p style="margin-top:10px;">
+Paid: <strong>${formatCurrency(paid)}</strong>
+</p>
+
+<p>
+Remaining: <strong>${formatCurrency(remaining)}</strong>
+</p>
+
+<hr style="margin:15px 0;opacity:0.2">
+
+<h4>
+<i class="fa-solid fa-file-invoice"></i>
+Payment Ledger
+</h4>
+
+<table class="ledger-table">
+
+<thead>
+<tr>
+<th>Installment</th>
+<th>Amount</th>
+<th>Status</th>
+</tr>
+</thead>
+
+<tbody>
+${ledgerRows}
+</tbody>
+
+</table>
+
+${
+remaining > 0
+? `
+<button onclick="continuePayment('${id}')"
+class="course-btn">
+<i class="fa-solid fa-credit-card"></i>
+Continue Payment
+</button>
+`
+: `
+<p style="color:#00c6ff;font-weight:600;margin-top:10px;">
+<i class="fa-solid fa-circle-check"></i>
+Fully Paid
+</p>
+`
+}
+
+</div>
+`
+
+})
+
+html += "</div>"
+contentArea.innerHTML = html
+
+}
+function continuePayment(courseId){
+
+const payment = user.payments[courseId]
+
+const remaining = payment.total - payment.paid
+
+const installmentAmount = Math.ceil(payment.total / payment.installments)
+
+const amount = remaining < installmentAmount ? remaining : installmentAmount
+
+payWithPaystack(courseId, payment.package, amount)
+
+}
+
+function canGraduate(courseId){
+
+const payment=user.payments[courseId]
+
+if(!payment) return false
+
+return payment.paid>=payment.total
+
 }
 
 // ==============================
@@ -499,56 +682,69 @@ function openCourseModal(id) {
 
     const course = coursesDB.find(c => c.id === id);
 
-    let skillsHTML = course.skills
-        .map(skill => `<li>${skill}</li>`)
-        .join("");
+    let skillsHTML = course.skills.map(s => `<li>${s}</li>`).join("");
 
-    const enrolled = user.paidCourses.includes(id);
+    let packagesHTML = packagesDB.map(pkg => {
+
+        let itemsHTML = pkg.items.map(i => `<li>${i}</li>`).join("");
+
+        return `
+        <div class="package-option">
+
+            <h3>
+                <i class="fa-solid fa-box"></i>
+                ${pkg.name}
+            </h3>
+
+            <p class="package-price">
+                ${formatCurrency(pkg.price)}
+            </p>
+
+            <ul class="package-items">
+                ${itemsHTML}
+            </ul>
+
+            <button onclick="startPayment('${id}','${pkg.id}')"
+                class="purchase-btn">
+                <i class="fa-solid fa-credit-card"></i>
+                Select Package
+            </button>
+
+        </div>
+        `;
+    }).join("");
 
     const modal = document.createElement("div");
     modal.classList.add("course-modal");
 
     modal.innerHTML = `
-        <div class="modal-content">
-            <span class="close-modal">&times;</span>
+    <div class="modal-content">
 
-            <h2>
-                <i class="fa-solid fa-layer-group"></i>
-                ${course.title}
-            </h2>
+        <span class="close-modal">&times;</span>
 
-            <p>${course.description}</p>
+        <h2>
+            <i class="fa-solid fa-layer-group"></i>
+            ${course.title}
+        </h2>
 
-            <p>
-                <i class="fa-regular fa-clock"></i>
-                <strong>Duration:</strong> ${course.duration}
-            </p>
+        <p>${course.description}</p>
 
-            <p>
-                <i class="fa-solid fa-naira-sign"></i>
-                <strong>Price:</strong> ${formatCurrency(course.price)}
-            </p>
+        <h4 style="margin-top:20px;">
+            <i class="fa-solid fa-list-check"></i>
+            What You'll Learn
+        </h4>
 
-            <h4 style="margin-top:20px;">
-                <i class="fa-solid fa-list-check"></i>
-                What You'll Learn
-            </h4>
+        <ul>${skillsHTML}</ul>
 
-            <ul>${skillsHTML}</ul>
+        <h3 style="margin-top:30px;">
+            Choose Your Package
+        </h3>
 
-            ${
-                enrolled
-                ? `<button class="purchase-btn" disabled>
-                        <i class="fa-solid fa-circle-check"></i>
-                        Already Enrolled
-                </button>`
-                : `<button onclick="payWithPaystack('${id}')"
-                    class="purchase-btn">
-                    <i class="fa-solid fa-credit-card"></i>
-                    Purchase Course
-                </button>`
-            }
+        <div class="packages-grid">
+            ${packagesHTML}
         </div>
+
+    </div>
     `;
 
     modal.querySelector(".close-modal").onclick = () => modal.remove();
@@ -560,18 +756,145 @@ function openCourseModal(id) {
     document.body.appendChild(modal);
 }
 
-function completePurchase(courseId, reference) {
+function startPayment(courseId, packageId){
+
+const pkg = packagesDB.find(p => p.id === packageId)
+
+const installmentAmount = Math.ceil(pkg.price / pkg.installments)
+
+const modal = document.createElement("div")
+modal.classList.add("course-modal")
+
+modal.innerHTML = `
+<div class="modal-content payment-modal">
+
+<h2>
+<i class="fa-solid fa-credit-card"></i>
+Choose Payment Option
+</h2>
+
+<p class="payment-course">
+${pkg.name}
+</p>
+
+<div class="payment-options">
+
+<label class="payment-option">
+<input type="radio" name="paymentType" value="full" checked>
+<span>Pay Full</span>
+<p class="payment-price">${formatCurrency(pkg.price)}</p>
+</label>
+
+<label class="payment-option">
+<input type="radio" name="paymentType" value="installment">
+<span>Installment Plan</span>
+</label>
+
+</div>
+
+<div id="installmentDetails" class="installment-details" style="display:none;">
+
+<p>
+Installments: <strong>${pkg.installments}</strong>
+</p>
+
+<p>
+Amount Per Payment:
+<strong>${formatCurrency(installmentAmount)}</strong>
+</p>
+
+<select id="installmentSelect">
+
+<option value="${installmentAmount}">
+Pay Installment (${formatCurrency(installmentAmount)})
+</option>
+
+</select>
+
+<div class="tos">
+
+<label>
+<input type="checkbox" id="tosCheck">
+I agree to the payment terms. Course completion requires full payment.
+</label>
+
+</div>
+
+</div>
+
+<div class="modal-actions">
+
+<button id="continuePayment" class="purchase-btn">
+<i class="fa-solid fa-arrow-right"></i>
+Continue Payment
+</button>
+
+</div>
+
+<span class="close-modal">&times;</span>
+
+</div>
+`
+
+document.body.appendChild(modal)
+
+const radioButtons = modal.querySelectorAll('input[name="paymentType"]')
+const installmentBox = modal.querySelector("#installmentDetails")
+
+radioButtons.forEach(r => {
+r.addEventListener("change", () => {
+
+if(r.value === "installment"){
+installmentBox.style.display = "block"
+}else{
+installmentBox.style.display = "none"
+}
+
+})
+})
+
+modal.querySelector("#continuePayment").onclick = () => {
+
+const paymentType = modal.querySelector('input[name="paymentType"]:checked').value
+
+if(paymentType === "installment"){
+
+const tos = modal.querySelector("#tosCheck").checked
+
+if(!tos){
+alert("You must agree to the payment terms.")
+return
+}
+
+payWithPaystack(courseId, packageId, installmentAmount)
+
+}else{
+
+payWithPaystack(courseId, packageId, pkg.price)
+
+}
+
+modal.remove()
+
+}
+
+modal.querySelector(".close-modal").onclick = () => modal.remove()
+
+}
+
+function completePurchase(courseId, packageName, reference) {
 
     if (!user.paidCourses.includes(courseId)) {
 
         user.paidCourses.push(courseId);
         user.progress[courseId] = 0;
 
-        // Save notification
         user.notifications = user.notifications || [];
+
         user.notifications.unshift({
-            message: "Successfully purchased " + 
-                     coursesDB.find(c => c.id === courseId).title,
+            message: `Purchased ${packageName} for ${
+                coursesDB.find(c => c.id === courseId).title
+            }`,
             date: new Date().toLocaleString(),
             reference: reference
         });
@@ -582,34 +905,156 @@ function completePurchase(courseId, reference) {
     document.querySelector(".course-modal")?.remove();
 
     updateStudentStatus();
-    renderCourses();
-    loadPage("home"); 
-    
+    loadPage("home");
 }
 
-function payWithPaystack(courseId) {
+function payWithPaystack(courseId, packageId, amount){
 
-    const course = coursesDB.find(c => c.id === courseId);
+const course = coursesDB.find(c=>c.id===courseId)
+const pkg = packagesDB.find(p=>p.id===packageId)
 
-    let handler = PaystackPop.setup({
-        key: "pk_live_ba580dd3ff1099056c22c54e68a3b80bc48b7772", 
-        email: user.email,
-        amount: course.price * 100, // kobo
-        currency: "NGN",
+let handler = PaystackPop.setup({
 
-        callback: function(response) {
+key:"pk_live_ba580dd3ff1099056c22c54e68a3b80bc48b7772",
+email:user.email,
+amount:amount*100,
+currency:"NGN",
 
-            // Payment successful
-            completePurchase(courseId, response.reference);
-        },
+callback:function(response){
 
-        onClose: function() {
-            alert("Transaction cancelled.");
-        }
-    });
+recordPayment(courseId,packageId,amount,response.reference)
 
-    handler.openIframe();
+},
+
+onClose:function(){
+
+alert("Transaction cancelled")
+
 }
+
+})
+
+handler.openIframe()
+
+}
+
+function recordPayment(courseId, packageId, amount, reference){
+
+const pkg = packagesDB.find(p => p.id === packageId)
+const course = coursesDB.find(c => c.id === courseId)
+
+// create payment record if first payment
+if(!user.payments[courseId]){
+
+user.payments[courseId] = {
+package: packageId,
+total: pkg.price,
+paid: 0,
+installments: pkg.installments
+}
+
+}
+
+// add payment
+user.payments[courseId].paid += amount
+
+if(user.payments[courseId].paid > pkg.price){
+user.payments[courseId].paid = pkg.price
+}
+
+const payment = user.payments[courseId]
+
+// ENROLL STUDENT AFTER FIRST PAYMENT
+if(!user.paidCourses.includes(courseId)){
+
+user.paidCourses.push(courseId)
+user.progress[courseId] = 0
+
+}
+
+// NOTIFICATIONS
+user.notifications = user.notifications || []
+
+user.notifications.unshift({
+
+message:`Payment received ${formatCurrency(amount)} for ${course.title}`,
+date:new Date().toLocaleString(),
+reference:reference
+
+})
+
+// SAVE DATA
+localStorage.setItem("nexoraUser", JSON.stringify(user))
+
+// PAYMENT SUMMARY
+const remaining = payment.total - payment.paid
+
+showPaymentSuccess(course.title, payment.paid, remaining)
+
+updateStudentStatus()
+
+loadPage("myCourses")
+
+}
+
+function showPaymentSuccess(courseTitle, paid, remaining){
+
+const modal = document.createElement("div")
+modal.classList.add("course-modal")
+
+modal.innerHTML = `
+
+<div class="modal-content payment-success">
+
+<div class="success-icon">
+<i class="fa-solid fa-circle-check"></i>
+</div>
+
+<h2>Payment Successful</h2>
+
+<p class="success-course">
+${courseTitle}
+</p>
+
+<div class="payment-summary">
+
+<div>
+<span>Total Paid</span>
+<strong>${formatCurrency(paid)}</strong>
+</div>
+
+<div>
+<span>Remaining</span>
+<strong>${formatCurrency(remaining)}</strong>
+</div>
+
+</div>
+
+<p class="success-message">
+${remaining <= 0 
+? "You have fully paid and can graduate after completing the course."
+: "You are now enrolled. Complete all installments before graduation."
+}
+</p>
+
+<button class="purchase-btn close-success">
+Go to My Courses
+</button>
+
+</div>
+`
+
+document.body.appendChild(modal)
+
+modal.querySelector(".close-success").onclick = () => {
+
+modal.remove()
+loadPage("myCourses")
+
+}
+
+}
+
 // ==============================
 // LOAD DEFAULT PAGE ON REFRESH
 // ==============================
