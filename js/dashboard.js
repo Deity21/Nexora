@@ -168,6 +168,15 @@ const coursesDB = [
     skills: ["Node.js", "Express", "Authentication", "Databases"]
 },
 {
+    id: "data",
+    title: "Data Analysis",
+    duration: "4 Months",
+    price: 300000,
+    level: "Beginner",
+    description: "Learn how to analyze, visualize and interpret data to make smart business decisions.",
+    skills: ["Excel", "SQL", "Python", "Data Visualization", "Power BI"]
+},
+{
     id: "cyber",
     title: "Cyber Security",
     duration: "4 Months",
