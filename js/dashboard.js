@@ -65,7 +65,7 @@ user.paidCourses.forEach(courseId => {
             package: "basic",
             total: 300000,
             paid: 300000,
-            installments: 2
+            installments: 3
         }
 
     }
