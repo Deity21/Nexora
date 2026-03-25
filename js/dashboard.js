@@ -110,7 +110,7 @@ const packagesDB = [
 id:"basic",
 name:"Basic Package",
 price:300000,
-installments:2,
+installments:3,
 items:["Certification of Completion"]
 },
 {
