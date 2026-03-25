@@ -168,6 +168,22 @@ const coursesDB = [
     skills: ["Node.js", "Express", "Authentication", "Databases"]
 },
 {
+    id: "video",
+    title: "Video Editing & Production",
+    duration: "3 Months",
+    price: 300000,
+    level: "Beginner",
+    description: "Learn professional video editing, shooting techniques, lighting setup and visual storytelling using industry-standard tools.",
+    skills: [
+        "Camera Angles & Shooting Techniques",
+        "Lighting Setup",
+        "CapCut Editing",
+        "Adobe Premiere Pro",
+        "DaVinci Resolve",
+        "Basic Visual Effects"
+    ]
+},
+{
     id: "data",
     title: "Data Analysis",
     duration: "4 Months",
@@ -176,6 +192,7 @@ const coursesDB = [
     description: "Learn how to analyze, visualize and interpret data to make smart business decisions.",
     skills: ["Excel", "SQL", "Python", "Data Visualization", "Power BI"]
 },
+
 {
     id: "cyber",
     title: "Cyber Security",
